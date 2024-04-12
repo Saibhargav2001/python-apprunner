@@ -1,0 +1,53 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  code-scanning:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Code Scanning
+        uses: github/codeql-action@v2
+
+  code-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x' # specify your Python version
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Flake8
+        run: flake8 .
+
+  publish-reports:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run tests and generate coverage report
+        run: |
+          pytest --cov-report=xml --cov=.
+          # Any other commands to generate reports
+
+      - name: Publish report
+        uses: actions/upload-artifact@v2
+        with:
+          name: code-coverage-report
+          path: coverage.xml # Path to the generated report
